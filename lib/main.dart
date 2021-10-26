@@ -17,16 +17,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
+    print('MyApp 入口 build执行');
     return MultiProvider(
         providers: [ChangeNotifierProvider.value(value: ThemeChangeManager())],
       child: Consumer<ThemeChangeManager>(
-        builder: (context, manager, childWidget) {
-
+        child: MyHomePage(title: 'Flutter Demo Home Page') ,
+        builder: (context, manager, child) {
+          print('MultiProvider child 中builder  方法执行');
           return MaterialApp(
             title: 'Flutter Demo',
             theme: manager.currentThemeDataObject.themeData,
-            home: MyHomePage(title: 'Flutter Demo Home Page'),
+            home: child,
           );
         },
       ),
