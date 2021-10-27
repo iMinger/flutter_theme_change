@@ -31,9 +31,6 @@ dependencies:
   sp_util: ^2.0.3
   provider: ^6.0.1
 
-  # Library to encode and decode ThemeData and associated objects to/from Json
-  # This is currently an early release of the library
-  json_theme: ^2.1.1
 
 dev_dependencies:
   flutter_test:

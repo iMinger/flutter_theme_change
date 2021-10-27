@@ -1,7 +1,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:sp_util/sp_util.dart';
-import 'package:json_theme/json_theme.dart';
 
 const  kThemeDataKey = 'theme_data_key';
 
@@ -18,6 +17,7 @@ class ThemeChangeManager with ChangeNotifier{
     return _singleton;
   }
 
+
   /// 这里为目前支持的主题类型，key为主题类型的key， 后面的value为主题的主题色。
   Map<String, Color> themeColorMap = {
     'default' : Colors.white70,
@@ -33,18 +33,33 @@ class ThemeChangeManager with ChangeNotifier{
   };
 
 
-  /// 声明一个变量
+  /// 声明一个变量并从缓存中读取值,使用时只能通过下面的 get themeKey方法来获取值，这里只做保存变量值
   String _themeKey = '';
   /// set 和 get方法
-  String get themeKey => _themeKey;
-  ThemeDataObject _currentThemeDataObject = SpUtil.getObj(kThemeDataKey,(v) => ThemeDataObject.fromJson(v)) ?? DefaultThemeDataObject();
+  String get themeKey {
+    if (_themeKey.isEmpty) {
+      _themeKey = SpUtil.getString(kThemeDataKey, defValue: 'default')!;
+    }
+    return _themeKey;
+  }
+  /// 声明一个内部变量
+  ThemeDataObject? _currentThemeDataObject;
 
-  ThemeDataObject get currentThemeDataObject =>  _currentThemeDataObject;
+  ThemeDataObject get currentThemeDataObject {
+    if (_currentThemeDataObject == null){
+      _currentThemeDataObject = themeDataObjectMap[themeKey] ??  DefaultThemeDataObject();
+    }
+    return _currentThemeDataObject!;
+  }
+
   setTheme(String themeKey){
+    if (!themeDataObjectMap.keys.contains(themeKey)) return;
     _themeKey = themeKey;
-    _currentThemeDataObject = themeDataObjectMap[themeKey] ?? DefaultThemeDataObject();
     /// 将真正的主题对象保存起来
-    SpUtil.putObject(kThemeDataKey, currentThemeDataObject);
+    SpUtil.putString(kThemeDataKey, themeKey);
+
+    /// 切换主题
+    _currentThemeDataObject = themeDataObjectMap[themeKey] ?? DefaultThemeDataObject();
     /// 通知监听者
     notifyListeners();
   }
@@ -59,20 +74,6 @@ class ThemeDataObject {
   CustomThemeDataObject customThemeDataObject;
   ThemeDataObject({Key? key, required this.themeData, required this.customThemeDataObject});
 
-  factory ThemeDataObject.fromJson(Map<dynamic, dynamic> jsonRes) {
-    var theme = ThemeDecoder.decodeThemeData(jsonRes['themeData']) ?? DefaultThemeDataObject().themeData;
-    return ThemeDataObject(
-      themeData: theme,
-      customThemeDataObject: CustomThemeDataObject.fromJson(jsonRes['customThemeDataObject'])
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-   return  <String, dynamic>{
-      'themeData': ThemeEncoder.encodeThemeData(themeData),
-      'customThemeDataObject': customThemeDataObject.toJson(),
-    };
-  }
 }
 
 class CustomThemeDataObject{
